@@ -22,11 +22,12 @@ String* not_melon_loader;
 
 void DoNothingMethod(MethodInfo* method)
 {
-	il2cppi_log_write("DoNothingCalled");
+	il2cppi_log_write("CALL: DoNothingMethod\n");
 }
 
 bool File_Exists_Hook(String* str, MethodInfo* method)
 {
+	il2cppi_log_write("CALL: File_Exists_Hook\n");
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> wideToNarrow;
 	std::string skey = wideToNarrow.to_bytes(std::wstring((const wchar_t*)
 		(&((Il2CppString*)str)->chars), ((Il2CppString*)str)->length));
@@ -43,38 +44,66 @@ bool File_Exists_Hook(String* str, MethodInfo* method)
 
 bool Directory_Exists_Hook(String* str, MethodInfo* method)
 {
+	il2cppi_log_write("CALL: Directory_Exists_Hook");
+	il2cppi_log_write("\t\tstr:" + il2cppi_to_string(str));
+
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> wideToNarrow;
 	std::string skey = wideToNarrow.to_bytes(std::wstring((const wchar_t*)
 		(&((Il2CppString*)str)->chars), ((Il2CppString*)str)->length));
 
 	if(skey.find("MelonLoader") != std::string::npos || skey.find(NotMelonLoader) != std::string::npos)
 	{
+		il2cppi_log_write("\t\tRETURN: (fixed) false\n");
 		return false;
 	}
 
-	il2cppi_log_write("DirectoryHooked\n");
-
-	return Directory_Exists(str, method);
+	bool b =  Directory_Exists(str, method);
+	il2cppi_log_write(b ? "\t\tRETURN: true\n" : "\t\tRETURN: false\n");
+	return b;
 }
 
 bool String_Contains_Hook(String* str, String* str2, MethodInfo* method)
 {
+	il2cppi_log_write("CALL: String_Contains_Hook");
+	il2cppi_log_write("\t\tstr:" + il2cppi_to_string(str));
+	il2cppi_log_write("\t\tstr2:" + il2cppi_to_string(str2));
+
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> wideToNarrow;
 	std::string skey = wideToNarrow.to_bytes(std::wstring((const wchar_t*)
 		(&((Il2CppString*)str)->chars), ((Il2CppString*)str)->length));
 
-	il2cppi_log_write(skey);
+	// List of strings the game seems to search for:
+	// ============================================
+	// OnlineFix
+	// PhotonBridge
+	// Cheat
+	// Unknown
+	// Melon
+	// version
+	// winhttp
+	// winmm
+	// PhasByPass
+	// ByPass
 
-	if(skey.find("MelonLoader") != std::string::npos || skey.find(NotMelonLoader) != std::string::npos)
-	{
+	if(
+		skey.find("MelonLoader") != std::string::npos
+		|| skey.find(NotMelonLoader) != std::string::npos
+		|| skey.find("PhasBypass") != std::string::npos
+		|| skey.find("version") != std::string::npos
+	) {
+		il2cppi_log_write("\t\tRETURN: (fixed) false\n");
 		return false;
 	}
 
-	return String_Contains(str, str2, method);
+	bool b = String_Contains(str, str2, method);
+	il2cppi_log_write(b ? "\t\tRETURN: true\n" : "\t\tRETURN: false\n");
+	return b;
 }
 
 void* TryGetModuleHandleHook(String* str, MethodInfo* method)
 {
+	il2cppi_log_write("CALL: TryGetModuleHandleHook\n");
+	il2cppi_log_write("\t\tstr:" + il2cppi_to_string(str));
 
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> wideToNarrow;
 	std::string skey = wideToNarrow.to_bytes(std::wstring((const wchar_t*)
@@ -87,18 +116,21 @@ void* TryGetModuleHandleHook(String* str, MethodInfo* method)
 
 String* GetMelonLoaderSearchStrings(Byte__Array* theArray, bool b, MethodInfo* method)
 {
+	il2cppi_log_write("CALL: GetMelonLoaderSearchStrings\n");
 	return not_melon_loader;
 }
 
 void CheckProcessesForModsFunc(MethodInfo* method)
 {
-	il2cppi_log_write("CheckProcessesForMods");
+	il2cppi_log_write("CALL: CheckProcessesForModsFunc\n");
 }
 
 void CheckForModsFunc(MethodInfo* method)
 {
-	il2cppi_log_write("DoNothingCalled");
+	il2cppi_log_write("CALL: CheckForModsFunc\n");
 }
+
+
 
 void Run()
 {
@@ -108,13 +140,28 @@ void Run()
 	not_melon_loader = (String*)il2cpp_string_new(NotMelonLoader.c_str());
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
-	DetourAttach(&(PVOID&)CheckForGetModuleHandle, TryGetModuleHandleHook);
-	DetourAttach(&(PVOID&)CheckProcessesForMods, CheckProcessesForModsFunc);
-	DetourAttach(&(PVOID&)CheckForMods, CheckForModsFunc);
-	DetourAttach(&(PVOID&)__101____________5, DoNothingMethod);
-	DetourAttach(&(PVOID&)__101____________2, DoNothingMethod);
-	DetourAttach(&(PVOID&)__101____________6, DoNothingMethod);
-	DetourAttach(&(PVOID&)__101____________4, DoNothingMethod);
+
+
+	DetourAttach(&(PVOID&)__104____________, DoNothingMethod);
+	DetourAttach(&(PVOID&)__104_____________1, DoNothingMethod);
+	DetourAttach(&(PVOID&)__104_____________2, DoNothingMethod);
+	DetourAttach(&(PVOID&)__104_____________4, DoNothingMethod);
+	DetourAttach(&(PVOID&)__104_____________6, DoNothingMethod);
+	DetourAttach(&(PVOID&)__104_____________7, DoNothingMethod);
+	DetourAttach(&(PVOID&)__104_____________8, DoNothingMethod);
+	DetourAttach(&(PVOID&)__104_____________9, DoNothingMethod);
+
+
+	DetourAttach(&(PVOID&)__104_____________10, TryGetModuleHandleHook);
+	DetourAttach(&(PVOID&)__105____________, CheckProcessesForModsFunc);
+	DetourAttach(&(PVOID&)__105_____________1, CheckForModsFunc);
+
+	// override mod checking function
+	//DetourAttach(&(PVOID&)CheckForGetModuleHandle, TryGetModuleHandleHook);
+	//DetourAttach(&(PVOID&)CheckProcessesForMods, CheckProcessesForModsFunc);
+	//DetourAttach(&(PVOID&)CheckForMods, CheckForModsFunc);
+
+	// override file/directory/string checking
 	DetourAttach(&(PVOID&)File_Exists, File_Exists_Hook);
 	DetourAttach(&(PVOID&)Directory_Exists, Directory_Exists_Hook);
 	DetourAttach(&(PVOID&)String_Contains, String_Contains_Hook);
