@@ -28,18 +28,21 @@ void DoNothingMethod(MethodInfo* method)
 bool File_Exists_Hook(String* str, MethodInfo* method)
 {
 	il2cppi_log_write("CALL: File_Exists_Hook\n");
+	il2cppi_log_write("\t\tstr:" + il2cppi_to_string(str));
+
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> wideToNarrow;
 	std::string skey = wideToNarrow.to_bytes(std::wstring((const wchar_t*)
 		(&((Il2CppString*)str)->chars), ((Il2CppString*)str)->length));
 
 	if(skey.find("dll") != std::string::npos || skey.find(NotMelonLoader) != std::string::npos)
 	{
+		il2cppi_log_write("\t\tRETURN: (fixed) false\n");
 		return false;
 	}
 
-	il2cppi_log_write("FileHooked\n");
-
-	return File_Exists(str, method);
+	bool b = File_Exists(str, method);
+	il2cppi_log_write(b ? "\t\tRETURN: true\n" : "\t\tRETURN: false\n");
+	return b;
 }
 
 bool Directory_Exists_Hook(String* str, MethodInfo* method)
@@ -84,6 +87,7 @@ bool String_Contains_Hook(String* str, String* str2, MethodInfo* method)
 	// winmm
 	// PhasByPass
 	// ByPass
+	// Unhollower
 
 	if(
 		skey.find("MelonLoader") != std::string::npos
@@ -108,8 +112,6 @@ void* TryGetModuleHandleHook(String* str, MethodInfo* method)
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> wideToNarrow;
 	std::string skey = wideToNarrow.to_bytes(std::wstring((const wchar_t*)
 		(&((Il2CppString*)str)->chars), ((Il2CppString*)str)->length));
-
-	il2cppi_log_write(skey);
 
 	return nullptr;
 }
